@@ -1,0 +1,2 @@
+depart,departDate,arrive,returnDate,numPassengers,seatPref,seatType,findFlightsx,findFlightsy
+Denver,07/10/2023,Frankfurt,07/11/2023,1,None,Coach,61,5

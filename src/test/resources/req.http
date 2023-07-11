@@ -1,0 +1,7 @@
+POST http://localhost:1080/webtours/index.htm
+Content-Type: application/json
+
+{
+  "user": "asd",
+  "password": "123"
+}
