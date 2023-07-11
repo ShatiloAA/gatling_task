@@ -2,18 +2,18 @@ package example
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
+import scala.util.Random
 
 object Request {
-  private val regHeaders = Map(
-    "Cache-Control" -> "max-age=0",
-    "Sec-Fetch-Dest" -> "document",
-    "Sec-Fetch-Mode" -> "navigate",
-    "Sec-Fetch-Site" -> "same-origin",
-    "Sec-Fetch-User" -> "?1",
-    "sec-ch-ua" -> """Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114""",
-    "sec-ch-ua-mobile" -> "?0",
-    "sec-ch-ua-platform" -> "Windows"
-  )
+
+  val alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+  val username = randStr(3)
+  val pass = randStr(3)
+  val firstName = randStr(5)
+  val lastName = randStr(6)
+  val address1 = randStr(8)
+  val address2 = randStr(8)
 
   val csvLoginFeeder = csv("csv/login.csv").eager
   val csvTicketFeeder = csv("csv/ticketsParams.csv").eager
@@ -40,21 +40,27 @@ object Request {
           )
         }
 
-      /*    .exec(
-            http("request_0")
-              .get("/WebTours/home.html")
-              .resources(
-                http("request_1")
-                  .get("/WebTours/header.html"),
-                http("request_4")
-                  .get("/cgi-bin/welcome.pl?signOff=true"),
-              )
-          )*/
-      /*		.exec {
-            session =>
-              println(session("userSession").as[String])
-              session
-          }*/
+      def registration = {
+        exec(
+          http("enter")
+            .get("/cgi-bin/login.pl?username=&password=&getInfo=true")
+        )
+          .pause(1)
+          .exec(
+            http("register")
+              .post("/cgi-bin/login.pl")
+              .formParam("username", username)
+              .formParam("password", pass)
+              .formParam("passwordConfirm", pass)
+              .formParam("firstName", firstName)
+              .formParam("lastName", lastName)
+              .formParam("address1", address1)
+              .formParam("address2", address2)
+              .formParam("register.x", "67")
+              .formParam("register.y", "14")
+              .check(status is 200)
+          )
+      }
 
       def login = {
         feed(csvLoginFeeder)
@@ -156,18 +162,46 @@ object Request {
            )
        }
 
-      def logout = {exec(
-        http("logOut")
-          .get("/cgi-bin/welcome.pl?signOff=1")
-          .resources(
-            http("[logOut]_getHome.html")
-              .get("/WebTours/home.html"),
-            http("[logOut]_getNav.pl?in=home")
-              .get("/cgi-bin/nav.pl?in=home"),
+      def deleteBooking = {
+        exec(
+          http("bookingPage")
+            .get("/cgi-bin/welcome.pl?page=itinerary")
+            .resources(
+              http("[bookingPage]_/cgi-bin/nav.pl?page=menu&in=itinerary")
+                .get("/cgi-bin/nav.pl?page=menu&in=itinerary"),
+              http("[bookingPage]_/cgi-bin/itinerary.pl")
+                .get("/cgi-bin/itinerary.pl")
+                .check(css("input[name='flightID']", "value").saveAs("flightID")),
+            )
+        )
+          .exec(
+            http("deleteBooking")
+              .post("/cgi-bin/itinerary.pl")
+              .formParam("1", "on")
+              .formParam("flightID", "#{flightID}")
+              .formParam("removeFlights.x", "62")
+              .formParam("removeFlights.y", "11")
+              .formParam(".cgifields", "1")
+              .check(status is 200)
+              .check(substring("#{flightID}").notExists)
           )
-          .check(status is 200)
+      }
+
+      def logout = {
+        exec(
+          http("logOut")
+            .get("/cgi-bin/welcome.pl?signOff=1")
+            .resources(
+              http("[logOut]_getHome.html")
+                .get("/WebTours/home.html"),
+              http("[logOut]_getNav.pl?in=home")
+                .get("/cgi-bin/nav.pl?in=home"),
+            )
+            .check(status is 200)
       )
   }
+
+  def randStr(n: Int) = (1 to n).map(_ => alpha(Random.nextInt(alpha.length))).mkString
 
   def printer(param : String) = {
     exec {
@@ -176,6 +210,5 @@ object Request {
         session
     }
   }
-
 
 }

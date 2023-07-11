@@ -11,7 +11,15 @@ class LoadTest extends Simulation{
   val httpConf = http.baseUrl(config.getString("conf.baseUrl"))
 
   setUp(
-    scn.inject(
+    buyScenario.inject(
+      constantUsersPerSec(config.getInt("conf.users")) during config.getInt("conf.during")
+    ).protocols(httpConf),
+
+    randomUserRegScenario.inject(
+      constantUsersPerSec(config.getInt("conf.users")) during config.getInt("conf.during")
+    ).protocols(httpConf),
+
+    deleteBookingScenario.inject(
       constantUsersPerSec(config.getInt("conf.users")) during config.getInt("conf.during")
     ).protocols(httpConf)
   )

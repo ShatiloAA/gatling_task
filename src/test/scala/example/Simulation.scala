@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 
 object Simulation {
 
-  val scn : ScenarioBuilder = scenario("tickets scenario")
+  val buyScenario : ScenarioBuilder = scenario("login_buy_logout")
     .exec(homepage)
     .pause(1)
     .exec(userSession)
@@ -24,4 +24,24 @@ object Simulation {
     .exec(payTicket)
     .pause(1)
     .exec(logout)
+
+  val randomUserRegScenario = scenario("reg_logout")
+    .exec(homepage)
+    .pause(1)
+    .exec(registration)
+    .pause(1)
+    .exec(logout)
+
+
+  val deleteBookingScenario = scenario("login_deleteBooking_logout")
+    .exec(homepage)
+    .pause(1)
+    .exec(userSession)
+    .pause(1)
+    .exec(login)
+    .pause(1)
+    .exec(deleteBooking)
+    .pause(1)
+    .exec(logout)
+
 }
