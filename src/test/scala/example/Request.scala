@@ -15,9 +15,9 @@ object Request {
   val address1 = randStr(8)
   val address2 = randStr(8)
 
-  val csvLoginFeeder = csv("csv/login.csv").eager
-  val csvTicketFeeder = csv("csv/ticketsParams.csv").eager
-  val csvPaymentFeeder = csv("csv/paymentCreds.csv").eager
+  val csvLoginFeeder = csv("csv/login.csv").circular.eager
+  val csvTicketFeeder = csv("csv/ticketsParams.csv").circular.eager
+  val csvPaymentFeeder = csv("csv/paymentCreds.csv").circular.eager
 
       def homepage = {
         exec(
@@ -162,7 +162,7 @@ object Request {
            )
        }
 
-      def deleteBooking = {
+      def itineraryPage = {
         exec(
           http("bookingPage")
             .get("/cgi-bin/welcome.pl?page=itinerary")
@@ -174,7 +174,10 @@ object Request {
                 .check(css("input[name='flightID']", "value").saveAs("flightID")),
             )
         )
-          .exec(
+      }
+
+      def deleteBooking = {
+          exec(
             http("deleteBooking")
               .post("/cgi-bin/itinerary.pl")
               .formParam("1", "on")
